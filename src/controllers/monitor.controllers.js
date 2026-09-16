@@ -14,7 +14,7 @@ const createMonitor = async (req,res)=>{
 
     }
 
-    const monitor = monitorService({
+    const monitor = monitorService.createMonitor({
         url,name,interval
     })
     return res.status(201).json({
@@ -32,6 +32,60 @@ const createMonitor = async (req,res)=>{
     }
 
  }
+
+ const checkWebsite = async (req,res) =>{
+    const {url,monitorId } = req.body || {}
+    console.log(url)
+
+    try{
+         if (!url) {
+            return res.status(400).json({
+                success: false,
+                message: "URL not found"
+            });
+        }
+
+    const result = await monitorService.checkWebsite(url)
+
+    const storeResults = await monitorService.storeResults(monitorId,result)
+
+    res.status(200).json({
+        success:true,
+        message:"Response time found",
+        data:storeResults
+
+    })
+
+    }catch(error){
+               res.status(500).json({
+            success:false,
+            message:error.message
+        })
+
+    }
+  
+ }
+
+ const storeResults = (req, res) => {
+    const { monitorId, result } = req.body || {};
+
+    if (!result || typeof result !== "object") {
+        return res.status(400).json({
+            success: false,
+            message: "A result object is required"
+        });
+    }
+
+    const storedResult = monitorService.storeResults(monitorId, result);
+    return res.status(201).json({
+        success: true,
+        data: storedResult
+    });
+ };
+
+
  module.exports = {
     createMonitor,
+    checkWebsite,
+    storeResults
 };
