@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 
 const monitorRoutes = require("./routes/monitor.routes");
+const { startMonitoring } = require("./services/monitor.schedular");
 
 const app = express();
 
@@ -16,6 +17,7 @@ app.get("/api/health", (req, res) => {
 });
 
 app.use("/api/monitors", monitorRoutes);
+startMonitoring();
 
 // Return a useful JSON response when a client sends malformed JSON.
 app.use((error, req, res, next) => {
