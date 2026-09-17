@@ -1,14 +1,18 @@
-const monitors = [];
+const prisma = require("../prisma");
 
-const checkResults = [];
 
-const createMonitor = (monitorData)=>{
-    const newMonitor = {
-        id:monitors.length +1,
+
+
+
+const createMonitor = async (monitorData)=>{
+    const newMonitor =  await prisma.monitor.create(  {
+     data:{
         name:monitorData.name,
-        url:monitorData.url
-    }
-    monitors.push(newMonitor)
+        url:monitorData.url,
+        interval:monitorData.interval
+     }
+    })
+
     return newMonitor
 }
 
@@ -44,23 +48,38 @@ const checkWebsite = async (url) => {
     
 }
 
-const storeResults = (monitorId,result)=>{
-    const results = {
-        monitorsId:monitorId,
-         isUp: result.isUp,
-        responseTime: result.totalTime,
-        statusCode: result.status,
-        checkedAt: new Date()
-    }
-    checkResults.push(results)
+const storeResults =async (monitorId,result)=>{
+    const results = await prisma.monitorCheck.create( {
+        data:{
+
+            monitorId :Number(monitorId),
+             isUp: result.isUp,
+            responseTime: result.totalTime,
+            statusCode: result.status,
+            checkedAt: new Date()
+        }
+    })
+
     return results
 }
 
-const getMonitors = () =>{
-
-    console.log(monitors)
-    return monitors
-
+const getMonitorsById =async (id) =>{
+    const result = await prisma.monitor.findUnique({
+        where:{
+            monitorId:Number(id)
+        }
+    })
+    return result
 }
 
-module.exports={createMonitor,checkWebsite,storeResults,getMonitors}
+const getMonitors =async () =>{
+
+   const result = await prisma.monitor.findMany({
+    orderBy:{
+        createdAt:"desc"
+    }
+   })
+return result
+}
+
+module.exports={createMonitor,checkWebsite,storeResults,getMonitors,getMonitorsById}
