@@ -83,9 +83,29 @@ const createMonitor = async (req,res)=>{
     });
  };
 
+ const getAllMonitors = (_,res)=>{
+    try{
+         const result = monitorService.getMonitors()
+         res.status(200).json({
+            message:result,
+            success:"true"
+         })
+
+    }catch(error){
+        res.status(500).json({
+               success:"false",
+            message:error
+        })
+
+    }
+   
+
+ }
+
 
  module.exports = {
     createMonitor,
     checkWebsite,
-    storeResults
+    storeResults,
+    getAllMonitors
 };

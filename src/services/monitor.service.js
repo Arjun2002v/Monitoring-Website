@@ -56,4 +56,11 @@ const storeResults = (monitorId,result)=>{
     return results
 }
 
-module.exports={createMonitor,checkWebsite,storeResults}
+const getMonitors = () =>{
+
+    console.log(monitors)
+    return monitors
+
+}
+
+module.exports={createMonitor,checkWebsite,storeResults,getMonitors}
