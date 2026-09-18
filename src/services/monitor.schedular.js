@@ -18,9 +18,24 @@ const startMonitoring = async () => {
             const runCheck = async () =>{
                 try{
                     
+                    // Check the URL and persist the response details.
                     const result = await monitorService.checkWebsite(monitor.url)
 
                     await monitorService.storeResults(monitor.id,result)
+                    
+                    // Convert the boolean result into the monitor status used by the database.
+                    const status = result.isUp ? "Up" :"Down"
+
+                    await monitorService.updateMonitorStatus(status)
+
+                    // Resolve or create incidents when the monitor changes state.
+                    if(status==="Down" && monitor.status==="Up"){
+                          await monitorService.resolveOpenIncidents(monitor.id)
+
+                    }
+                    if(status==="Up" && monitor.status==="Down"){
+                        await monitorService.incidentMonitor(monitor.id)
+                    }
 
 
                         console.log(
@@ -36,7 +51,7 @@ const startMonitoring = async () => {
                     );
 
              }
-             // Convert the interval from seconds to milliseconds for setInterval.
+             // Convert the configured interval from seconds to milliseconds.
              setInterval(
                 runCheck,
                    monitor.interval * 1000

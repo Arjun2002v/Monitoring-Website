@@ -15,7 +15,18 @@ model Monitor {
   status String  @default("UNKNOWN")
   createdAt DateTime  @default(now())
   checks  MonitorCheck[]
+  incidents Incident[]
 }
+
+model Incident {
+  id            Int      @id @default(autoincrement())
+monitorId     Int
+  startedAt     DateTime @default(now())
+  resolvedAt    DateTime? @default(now()) 
+  monitor Monitor @relation(fields:[monitorId],references:[id],onDelete:Cascade)
+}
+
+
 
 
 model MonitorCheck {
