@@ -1,23 +1,27 @@
 # Monitoring Website API
 
-This project is the backend for a website uptime-monitoring application. It uses Express for the HTTP API, PostgreSQL for persistence, and Prisma as the database client.
+This project is a website uptime-monitoring API built with Express, PostgreSQL, Prisma, Redis, and BullMQ.
 
-## Current process
+## How the application works
 
-1. The server starts from `src/server.js` on port `5001` by default.
-2. Express enables CORS and JSON request parsing.
-3. Monitor routes are mounted at `/api/monitors`.
-4. A monitor can be created with a name, URL, and checking interval.
-5. A website check sends a request to the supplied URL and measures the response time.
-6. The check result is stored in the `MonitorCheck` table and linked to the monitor.
-7. When the server starts, the scheduler loads monitors from PostgreSQL and prepares a repeating check loop for each monitor.
-8. Each loop checks the monitor URL, measures response time, and stores a `MonitorCheck` record.
-9. The scheduler derives an `Up` or `Down` status and is intended to update the monitor and create or resolve incidents when the status changes.
+The application uses a queue worker instead of an in-process scheduler:
+
+1. The API starts from `src/server.js` on port `5001`.
+2. `POST /api/monitors` creates a monitor in PostgreSQL.
+3. The controller adds a repeatable BullMQ job for that monitor using its interval.
+4. Redis holds the `monitor-checks` queue.
+5. `src/workers/monitor-worker.js` receives each job and checks the monitor URL.
+6. The response time and HTTP status are stored in `MonitorCheck`.
+7. The monitor status is updated to `UP` or `DOWN`.
+8. A transition to `DOWN` creates an open `Incident`.
+9. A transition from `DOWN` to `UP` resolves the open incident.
+
+There is no separate scheduler process. BullMQ repeatable jobs provide the recurring execution.
 
 ## Requirements
 
 - Node.js 18 or newer
-- Docker Desktop, or a local PostgreSQL  database
+- Docker Desktop
 - npm
 
 ## Setup
@@ -28,27 +32,27 @@ Install dependencies:
 npm install
 ```
 
-Start PostgreSQL with Docker:
+Start PostgreSQL and Redis:
 
 ```bash
 docker compose up -d
 ```
 
-Set `DATABASE_URL` in `.env`. For the included Docker configuration, use:
+The services use these local ports:
+
+- PostgreSQL: `localhost:5432`
+- Redis: `localhost:6123` mapped to Redis container port `6379`
+
+Set `.env` to point to the PostgreSQL database:
 
 ```env
 DATABASE_URL="postgresql://postgres:postgres@localhost:5432/monitor_uptime"
 ```
 
-Generate the Prisma client:
+Generate Prisma Client and apply the schema:
 
 ```bash
 npm run prisma:generate
-```
-
-Create or update the database schema as needed with Prisma:
-
-```bash
 npx prisma db push
 ```
 
@@ -58,13 +62,13 @@ Start the API:
 npm start
 ```
 
-For development with automatic restart:
+Start the BullMQ worker in a second terminal:
 
 ```bash
-npm run dev
+npm run worker
 ```
 
-The API is available at `http://localhost:5001`.
+The worker must remain running for queued website checks to execute.
 
 ## API endpoints
 
@@ -74,23 +78,12 @@ The API is available at `http://localhost:5001`.
 GET /api/health
 ```
 
-Example response:
-
-```json
-{
-  "success": true,
-  "message": "Server is running"
-}
-```
-
 ### Create a monitor
 
 ```http
 POST /api/monitors
 Content-Type: application/json
 ```
-
-Request body:
 
 ```json
 {
@@ -100,20 +93,20 @@ Request body:
 }
 ```
 
+The interval is measured in seconds. Creating the monitor also creates its repeatable BullMQ check job.
+
 ### List monitors
 
 ```http
 GET /api/monitors
 ```
 
-### Check a website
+### Check a website immediately
 
 ```http
 POST /api/monitors/check
 Content-Type: application/json
 ```
-
-Request body:
 
 ```json
 {
@@ -122,16 +115,12 @@ Request body:
 }
 ```
 
-The API checks the URL, measures the response time, and stores the result for the supplied monitor.
-
 ### Store an existing result
 
 ```http
 POST /api/monitors/store
 Content-Type: application/json
 ```
-
-Request body:
 
 ```json
 {
@@ -146,50 +135,54 @@ Request body:
 
 ## Database models
 
-- `Monitor` stores the monitored URL, name, interval, status, and creation time.
-- `MonitorCheck` stores each check result, including uptime status, response time, HTTP status code, and timestamp.
-- `Incident` represents an outage and contains its start and optional resolution time.
-
-Each monitor can have many check results and incidents. Deleting a monitor also deletes its related checks and incidents.
+- `Monitor` stores the monitored URL, name, interval, current status, and creation time.
+- `MonitorCheck` stores every check result, response time, HTTP status code, and timestamp.
+- `Incident` stores an outage start time and remains open until `resolvedAt` is set.
 
 ## Project structure
 
 ```text
 src/
-  server.js                         Express application entry point
+  server.js                         Express API entry point
   prisma.js                         Prisma PostgreSQL client
-  controllers/monitor.controllers.js
-                                    HTTP request handlers
-  routes/monitor.routes.js          Monitor API routes
-  services/monitor.service.js       Database and website-check logic
-  services/monitor.schedular.js     Background monitor scheduler and incident handling
+  controllers/monitor.controllers.js API handlers and queue creation
+  routes/monitor.routes.js          Monitor routes
+  services/monitor.service.js       Checks and database operations
+  queues/monitor-queue.js           BullMQ queue connection
+  workers/monitor-worker.js         Check execution and incident handling
 prisma/schema.prisma                Database schema
-docker-compose.yml                  PostgreSQL container configuration
+docker-compose.yml                  PostgreSQL and Redis services
+```
+
+## Useful commands
+
+```bash
+npm start                 # Start the API
+npm run dev               # Start the API with Node watch mode
+npm run worker            # Start the BullMQ worker
+npm run prisma:generate  # Generate Prisma Client
+npx prisma db push       # Apply the Prisma schema to PostgreSQL
 ```
 
 ## Current limitations
 
-- The scheduler loads monitors only at startup; newly created monitors are not added until the server restarts.
-- The scheduler currently schedules the interval from inside `runCheck`, so the first check must be invoked before recurring checks can begin.
-- Status and incident transitions are implemented in the scheduler but still need integration testing against the Prisma schema.
-- The API currently expects a valid existing `monitorId` when storing a result.
+- Newly created repeatable jobs are added when the monitor is created; existing monitors need their jobs recreated if Redis data is cleared.
+- The worker and API must both be running for automatic checks.
 - Authentication and authorization are not implemented.
-- The database must be running before monitor creation or result storage can work.
+- Monitor deletion and repeatable-job cleanup are not implemented yet.
 
 ## Troubleshooting
 
-If Prisma reports that `.prisma/client/default` cannot be found, regenerate the client:
+If Redis reports `ECONNREFUSED`, start it with:
+
+```bash
+docker compose up -d redis
+```
+
+If Prisma reports a missing generated client:
 
 ```bash
 npm run prisma:generate
 ```
 
-If the server reports invalid JSON, remove trailing commas and use double-quoted property names. For example, this is valid:
-
-```json
-{
-  "name": "Example website",
-  "url": "https://example.com",
-  "interval": 60
-}
-```
+JSON request bodies must use double-quoted property names and no trailing commas.

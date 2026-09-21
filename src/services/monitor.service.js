@@ -40,7 +40,7 @@ const checkWebsite = async (url) => {
 
 
     } catch(error){
-             // Network failures are returned as a down result instead of stopping the scheduler.
+             // Network failures are returned as a down result instead of stopping the worker.
              const totalTime = Date.now() - startTime
              return {
             isUp:false,
@@ -75,9 +75,9 @@ const storeResults =async (monitorId,result)=>{
 // Updates the monitor's latest overall status.
 const updateMonitorStatus =async (monitorId,status)=>{
 
-    const result = await prisma.monitor.create({
+    const result = await prisma.monitor.update({
         where:{
-            monitorId:Number(monitorId)
+            id:Number(monitorId)
         },
         data:{
             status:status
@@ -92,7 +92,7 @@ const updateMonitorStatus =async (monitorId,status)=>{
 const getMonitorsById =async (id) =>{
     const result = await prisma.monitor.findUnique({
         where:{
-            monitorId:Number(id)
+            id:Number(id)
         }
     })
     return result
@@ -115,7 +115,8 @@ const incidentMonitor = async (id) => {
 
     const result = await prisma.Incident.create({
         data:{
-            id:Number(id)
+            monitorId:Number(id),
+            resolvedAt:null
         }
     })
 
@@ -128,7 +129,7 @@ const incidentMonitor = async (id) => {
 const getIncidentMonitors = async(id)=>{
     const result = await prisma.Incident.findFirst({
         where:{
-            monitorId:id,
+            monitorId:Number(id),
             resolvedAt: null
         }
     })
@@ -144,7 +145,7 @@ const resolveOpenIncidents = async (monitorId) =>{
     if(!incidents){
         return null
     }
-    const result = await prisma.incidents.update({
+    const result = await prisma.Incident.update({
         where:{
             id:incidents.id
         },
