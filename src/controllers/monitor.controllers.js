@@ -1,5 +1,4 @@
 const monitorService = require("../services/monitor.service")
-const monitorQueue = require("../queues/monitor-queue")
 
 
 const createMonitor = async (req,res)=>{
@@ -15,16 +14,9 @@ const createMonitor = async (req,res)=>{
 
     }
 
-    const monitor = await monitorService.createMonitor({
+    const monitor = monitorService.createMonitor({
         url,name,interval
     })
-
-    // BullMQ replaces the old scheduler by running checks repeatedly for this monitor.
-    await monitorQueue.add(
-        "check-website",
-        { monitorId: monitor.id, url: monitor.url },
-        { repeat: { every: Number(interval) * 1000 } }
-    )
     return res.status(201).json({
         success:true,
         message:"Monitor Uploaded SuccessFully",
@@ -74,7 +66,7 @@ const createMonitor = async (req,res)=>{
   
  }
 
- const storeResults = async (req, res) => {
+ const storeResults = (req, res) => {
     const { monitorId, result } = req.body || {};
 
     if (!result || typeof result !== "object") {
@@ -84,16 +76,16 @@ const createMonitor = async (req,res)=>{
         });
     }
 
-    const storedResult = await monitorService.storeResults(monitorId, result);
+    const storedResult = monitorService.storeResults(monitorId, result);
     return res.status(201).json({
         success: true,
         data: storedResult
     });
  };
 
- const getAllMonitors = async (_,res)=>{
+ const getAllMonitors = (_,res)=>{
     try{
-         const result = await monitorService.getMonitors()
+         const result = monitorService.getMonitors()
          res.status(200).json({
             message:result,
             success:"true"
@@ -109,6 +101,7 @@ const createMonitor = async (req,res)=>{
    
 
  }
+
 
  module.exports = {
     createMonitor,

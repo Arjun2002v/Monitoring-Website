@@ -16,7 +16,7 @@ The application uses a queue worker instead of an in-process scheduler:
 8. A transition to `DOWN` creates an open `Incident`.
 9. A transition from `DOWN` to `UP` resolves the open incident.
 
-There is no separate scheduler process. BullMQ repeatable jobs provide the recurring execution.
+BullMQ repeatable jobs provide the default recurring execution. An in-process scheduler is also included for learning and can be enabled with `ENABLE_SCHEDULER=true`. Use only one approach at a time.
 
 ## Requirements
 
@@ -47,6 +47,8 @@ Set `.env` to point to the PostgreSQL database:
 
 ```env
 DATABASE_URL="postgresql://postgres:postgres@localhost:5432/monitor_uptime"
+# Optional learning mode; omit this or set it to false to use BullMQ.
+ENABLE_SCHEDULER=false
 ```
 
 Generate Prisma Client and apply the schema:
@@ -69,6 +71,16 @@ npm run worker
 ```
 
 The worker must remain running for queued website checks to execute.
+
+### Scheduler learning mode
+
+To study the simpler `setInterval` approach, set this in `.env`:
+
+```env
+ENABLE_SCHEDULER=true
+```
+
+Restart the API after changing the setting. In this mode, the API loads existing monitors at startup, checks each one immediately, and repeats checks using its interval. BullMQ jobs are not added for newly created monitors in this mode, so restart the API after creating a monitor. Do not run the BullMQ worker for the same monitors while scheduler mode is enabled, or checks will be duplicated.
 
 ## API endpoints
 
@@ -148,6 +160,7 @@ src/
   controllers/monitor.controllers.js API handlers and queue creation
   routes/monitor.routes.js          Monitor routes
   services/monitor.service.js       Checks and database operations
+  services/monitor.schedular.js     Optional in-process learning scheduler
   queues/monitor-queue.js           BullMQ queue connection
   workers/monitor-worker.js         Check execution and incident handling
 prisma/schema.prisma                Database schema
@@ -168,6 +181,7 @@ npx prisma db push       # Apply the Prisma schema to PostgreSQL
 
 - Newly created repeatable jobs are added when the monitor is created; existing monitors need their jobs recreated if Redis data is cleared.
 - The worker and API must both be running for automatic checks.
+- Scheduler mode only loads monitors at API startup.
 - Authentication and authorization are not implemented.
 - Monitor deletion and repeatable-job cleanup are not implemented yet.
 
