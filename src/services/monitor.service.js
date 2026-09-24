@@ -1,23 +1,25 @@
 // Shared Prisma client used for all monitor database operations.
 const prisma = require("../prisma");
+const { scheduleMonitor } = require("../queues/monitor-queue");
 
 
 
 
 
 // Creates a monitor using the URL, display name, and check interval supplied by the client.
-const createMonitor = async (monitorData)=>{
-    const newMonitor =  await prisma.monitor.create(  {
-     data:{
-        // These fields are persisted in the Monitor table.
-        name:monitorData.name,
-        url:monitorData.url,
-        interval:monitorData.interval
-     }
-    })
+const createMonitor = async (monitorData) => {
+    const newMonitor = await prisma.monitor.create({
+        data: {
+            name: monitorData.name,
+            url: monitorData.url,
+            interval: monitorData.interval
+        }
+    });
 
-    return newMonitor
-}
+    await scheduleMonitor(newMonitor);
+
+    return newMonitor;
+};
 
 // Checks whether a website is reachable and measures the request duration.
 const checkWebsite = async (url) => {
@@ -55,6 +57,18 @@ const checkWebsite = async (url) => {
     
 }
 
+const deleteMonitor = async (monitorId) => {
+    await removeMonitorSchedule(monitorId);
+
+    const deletedMonitor = await prisma.monitor.delete({
+        where: {
+            id: Number(monitorId)   
+        }
+    });
+
+    return deletedMonitor;
+};
+
 // Stores one website check in the MonitorCheck table.
 const storeResults =async (monitorId,result)=>{
     const results = await prisma.monitorCheck.create( {
@@ -87,7 +101,22 @@ const updateMonitorStatus =async (monitorId,status)=>{
 
     return result
 }
+const updateMonitor = async (monitorId, monitorData) => {
+    const updatedMonitor = await prisma.monitor.update({
+        where: {
+            id: Number(monitorId)
+        },
+        data: {
+            name: monitorData.name,
+            url: monitorData.url,
+            interval: monitorData.interval
+        }
+    });
 
+    await scheduleMonitor(updatedMonitor);
+
+    return updatedMonitor;
+};
 // Retrieves a single monitor by its ID.
 const getMonitorsById =async (id) =>{
     const result = await prisma.monitor.findUnique({
@@ -158,4 +187,4 @@ const resolveOpenIncidents = async (monitorId) =>{
 }
 
 
-module.exports={createMonitor,checkWebsite,storeResults,getMonitors,getMonitorsById, updateMonitorStatus,incidentMonitor,getIncidentMonitors,resolveOpenIncidents}
+module.exports={createMonitor,checkWebsite,updateMonitor,storeResults,getMonitors,getMonitorsById,deleteMonitor, updateMonitorStatus,incidentMonitor,getIncidentMonitors,resolveOpenIncidents}

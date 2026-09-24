@@ -4,7 +4,9 @@ This project is a website uptime-monitoring API built with Express, PostgreSQL, 
 
 ## How the application works
 
-The application uses a queue worker instead of an in-process scheduler:
+The application supports two monitoring modes. BullMQ is the default; the in-process scheduler is available as a learning alternative.
+
+### Default BullMQ flow
 
 1. The API starts from `src/server.js` on port `5001`.
 2. `POST /api/monitors` creates a monitor in PostgreSQL.
@@ -16,7 +18,7 @@ The application uses a queue worker instead of an in-process scheduler:
 8. A transition to `DOWN` creates an open `Incident`.
 9. A transition from `DOWN` to `UP` resolves the open incident.
 
-BullMQ repeatable jobs provide the default recurring execution. An in-process scheduler is also included for learning and can be enabled with `ENABLE_SCHEDULER=true`. Use only one approach at a time.
+BullMQ repeatable jobs provide the default recurring execution. Use this mode for normal operation.
 
 ## Requirements
 
@@ -32,7 +34,7 @@ Install dependencies:
 npm install
 ```
 
-Start PostgreSQL and Redis:
+Start PostgreSQL and Redis for BullMQ mode:
 
 ```bash
 docker compose up -d
@@ -43,11 +45,11 @@ The services use these local ports:
 - PostgreSQL: `localhost:5432`
 - Redis: `localhost:6123` mapped to Redis container port `6379`
 
-Set `.env` to point to the PostgreSQL database:
+Set `.env` to point to the PostgreSQL database. Scheduler mode is disabled by default:
 
 ```env
 DATABASE_URL="postgresql://postgres:postgres@localhost:5432/monitor_uptime"
-# Optional learning mode; omit this or set it to false to use BullMQ.
+# Set to true only when using the learning scheduler instead of BullMQ.
 ENABLE_SCHEDULER=false
 ```
 
@@ -70,7 +72,7 @@ Start the BullMQ worker in a second terminal:
 npm run worker
 ```
 
-The worker must remain running for queued website checks to execute.
+The worker must remain running for queued website checks to execute. Redis must also be running.
 
 ### Scheduler learning mode
 
@@ -80,7 +82,7 @@ To study the simpler `setInterval` approach, set this in `.env`:
 ENABLE_SCHEDULER=true
 ```
 
-Restart the API after changing the setting. In this mode, the API loads existing monitors at startup, checks each one immediately, and repeats checks using its interval. BullMQ jobs are not added for newly created monitors in this mode, so restart the API after creating a monitor. Do not run the BullMQ worker for the same monitors while scheduler mode is enabled, or checks will be duplicated.
+Restart the API after changing the setting. In this mode, the API loads existing monitors at startup, checks each one immediately, and repeats checks using its interval. PostgreSQL is required, but Redis and the BullMQ worker are not. BullMQ jobs are not added for newly created monitors in this mode, so restart the API after creating a monitor. Do not run the BullMQ worker for the same monitors while scheduler mode is enabled, or checks will be duplicated.
 
 ## API endpoints
 
@@ -105,7 +107,7 @@ Content-Type: application/json
 }
 ```
 
-The interval is measured in seconds. Creating the monitor also creates its repeatable BullMQ check job.
+The interval is measured in seconds. In BullMQ mode, creating the monitor also creates its repeatable check job. In scheduler mode, the monitor is picked up after the API restarts.
 
 ### List monitors
 
@@ -119,6 +121,8 @@ GET /api/monitors
 POST /api/monitors/check
 Content-Type: application/json
 ```
+
+This endpoint checks the URL and stores a result immediately. Automatic status and incident transitions are handled by the BullMQ worker or learning scheduler.
 
 ```json
 {
@@ -180,8 +184,9 @@ npx prisma db push       # Apply the Prisma schema to PostgreSQL
 ## Current limitations
 
 - Newly created repeatable jobs are added when the monitor is created; existing monitors need their jobs recreated if Redis data is cleared.
-- The worker and API must both be running for automatic checks.
+- BullMQ mode requires the API, Redis, and worker to be running.
 - Scheduler mode only loads monitors at API startup.
+- The immediate `/api/monitors/check` endpoint does not create or resolve incidents.
 - Authentication and authorization are not implemented.
 - Monitor deletion and repeatable-job cleanup are not implemented yet.
 

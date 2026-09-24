@@ -2,10 +2,35 @@ const { Queue } = require("bullmq");
 
 const monitorQueue = new Queue("monitor-checks", {
     connection: {
-        // Use IPv4 explicitly so Node does not try an unavailable IPv6 ::1 listener.
-        host: "127.0.0.1",
-        port: 6123
+        host: "localhost",
+        port: 6379
     }
 });
 
-module.exports = monitorQueue;
+const scheduleMonitor = async (monitor) => {
+    await monitorQueue.upsertJobScheduler(
+        `monitor-${monitor.id}`,
+        {
+            every: monitor.interval * 1000
+        },
+        {
+            name: "check-website",
+            data: {
+                monitorId: monitor.id,
+                url: monitor.url
+            }
+        }
+    );
+};
+
+const removeMonitorSchedule = async (monitorId) => {
+    await monitorQueue.removeJobScheduler(
+        `monitor-${monitorId}`
+    );
+};
+
+module.exports = {
+    monitorQueue,
+    scheduleMonitor,
+    removeMonitorSchedule 
+};

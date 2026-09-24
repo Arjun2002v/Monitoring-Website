@@ -101,11 +101,53 @@ const createMonitor = async (req,res)=>{
    
 
  }
+const deleteMonitorController = async (req, res) => {
+    try {
+        const deletedMonitor = await monitorService.deleteMonitor(req.params.id);
 
+        res.json({
+            success: true,
+            data: deletedMonitor
+        });
+    } catch (error) {
+        console.error(error);
+
+        res.status(500).json({
+            success: false,
+            message: "Failed to delete monitor"
+        });
+    }
+};
+
+const updateMonitorController = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const updatedMonitor = await monitorService.updateMonitor(
+            id,
+            req.body
+        );
+
+        res.json({
+            success: true,
+            data: updatedMonitor
+        });
+    } catch (error) {
+        console.error(error);
+
+        res.status(500).json({
+            success: false,
+            message: "Failed to update monitor"
+        });
+    }
+};
 
  module.exports = {
     createMonitor,
     checkWebsite,
     storeResults,
-    getAllMonitors
+    getAllMonitors,
+    deleteMonitorController,
+    updateMonitorController
+    
 };
