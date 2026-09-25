@@ -7,6 +7,13 @@ const monitorQueue = new Queue("monitor-checks", {
     }
 });
 
+const monitorFailed = new Queue("monitor-failed",{
+    connection:{
+        host:"localhost",
+        port:6379
+    }
+})
+
 const scheduleMonitor = async (monitor) => {
     await monitorQueue.upsertJobScheduler(
         `monitor-${monitor.id}`,
@@ -32,5 +39,6 @@ const removeMonitorSchedule = async (monitorId) => {
 module.exports = {
     monitorQueue,
     scheduleMonitor,
-    removeMonitorSchedule 
+    removeMonitorSchedule ,
+    monitorFailed
 };

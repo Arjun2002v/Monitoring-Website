@@ -8,6 +8,8 @@ const {
     resolveOpenIncidents,
     incidentMonitor
 } = require("../services/monitor.service");
+const { monitorFailed } = require("../queues/monitor-queue");
+
 
 
 const worker = new Worker(
@@ -80,9 +82,19 @@ worker.on("completed", (job) => {
     console.log(`Job ${job.id} completed`);
 });
 
-worker.on("failed", (job, error) => {
-    console.log(
-        `Job ${job?.id} failed:`,
-        error.message
-    );
+worker.on("failed", async (job, error) => {
+
+    const failedJob = {
+        jobId: job.id,
+        url: job.data.url,
+        attemptMade: job.attemptsMade,
+        errorMessage: error.message
+    };
+
+    await monitorFailed.add(
+        "failed-monitor",       
+        failedJob
+    )
+
+    console.log(failedJob);
 });
