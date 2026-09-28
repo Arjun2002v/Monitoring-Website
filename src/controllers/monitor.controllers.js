@@ -119,6 +119,25 @@ const deleteMonitorController = async (req, res) => {
     }
 };
 
+const getMonitorChecksController = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const checks = await monitorService.getMonitorCheck(id);
+
+        res.status(200).json({
+            success: true,
+            checks
+        });
+
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+};
+
 const updateMonitorController = async (req, res) => {
     try {
         const { id } = req.params;
@@ -148,6 +167,7 @@ const updateMonitorController = async (req, res) => {
     storeResults,
     getAllMonitors,
     deleteMonitorController,
-    updateMonitorController
+    updateMonitorController,
+    getMonitorChecksController
     
 };

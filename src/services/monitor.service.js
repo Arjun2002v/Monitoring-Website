@@ -166,6 +166,19 @@ const getIncidentMonitors = async(id)=>{
     return result
 }
 
+const getMonitorCheck = async (id) =>{
+    const result = await prisma.monitorCheck.findMany({
+        where:{
+            monitorId:Number(id)
+        }
+        ,
+        orderBy:{
+            checkedAt
+        }
+    })
+    return result
+}
+
 
 // Marks the monitor's open incident as resolved when the website recovers.
 const resolveOpenIncidents = async (monitorId) =>{
@@ -187,4 +200,4 @@ const resolveOpenIncidents = async (monitorId) =>{
 }
 
 
-module.exports={createMonitor,checkWebsite,updateMonitor,storeResults,getMonitors,getMonitorsById,deleteMonitor, updateMonitorStatus,incidentMonitor,getIncidentMonitors,resolveOpenIncidents}
+module.exports={createMonitor,checkWebsite,updateMonitor,getMonitorCheck,storeResults,getMonitors,getMonitorsById,deleteMonitor, updateMonitorStatus,incidentMonitor,getIncidentMonitors,resolveOpenIncidents}
