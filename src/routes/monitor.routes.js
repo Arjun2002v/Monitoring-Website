@@ -13,6 +13,6 @@ router.delete("/:id", deleteMonitorController);
 
 router.put("/:id", updateMonitorController);
 router.get("/:id/checks", getMonitorChecksController);
-
+    
 
 module.exports = router

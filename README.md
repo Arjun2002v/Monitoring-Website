@@ -143,6 +143,30 @@ DELETE /api/monitors/:id
 Deleting a monitor removes its recurring BullMQ schedule and its database record.
 Related checks and incidents are removed by the database relationship cascade.
 
+### Get monitor check history
+
+```http
+GET /api/monitors/:id/checks
+```
+
+Returns the stored `MonitorCheck` records for the monitor.
+
+```json
+{
+  "success": true,
+  "checks": [
+    {
+      "id": 1,
+      "monitorId": 1,
+      "isUp": true,
+      "responseTime": 120,
+      "statusCode": 200,
+      "checkedAt": "2026-09-28T10:00:00.000Z"
+    }
+  ]
+}
+```
+
 ### Check a website immediately
 
 ```http

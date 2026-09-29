@@ -123,11 +123,27 @@ const getMonitorChecksController = async (req, res) => {
     try {
         const { id } = req.params;
 
-        const checks = await monitorService.getMonitorCheck(id);
+        const { page = 1, limit = 20, status } = req.query;
+
+        const pageNumber = Number(page);
+        const limitNumber = Number(limit);
+
+        const { result, total } = await getMonitorChecks(
+            id,
+            pageNumber,
+            limitNumber,
+            status
+        );
+
+        const totalPages = Math.ceil(total / limitNumber);
 
         res.status(200).json({
             success: true,
-            checks
+            page: pageNumber,
+            limit: limitNumber,
+            total,
+            totalPages,
+            checks: result
         });
 
     } catch (error) {
@@ -137,7 +153,6 @@ const getMonitorChecksController = async (req, res) => {
         });
     }
 };
-
 const updateMonitorController = async (req, res) => {
     try {
         const { id } = req.params;
