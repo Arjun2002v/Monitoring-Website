@@ -51,6 +51,7 @@ Set `.env` to point to the PostgreSQL database. Scheduler mode is disabled by de
 
 ```env
 DATABASE_URL="postgresql://postgres:postgres@localhost:5432/monitor_uptime"
+JWT_SECRET="replace-with-a-long-random-secret"
 # Set to true only when using the learning scheduler instead of BullMQ.
 ENABLE_SCHEDULER=false
 ```
@@ -93,6 +94,41 @@ Restart the API after changing the setting. In this mode, the API loads existing
 ```http
 GET /api/health
 ```
+
+### Register a user
+
+```http
+POST /api/auth/register
+Content-Type: application/json
+```
+
+```json
+{
+  "name": "Example User",
+  "email": "user@example.com",
+  "password": "your-password"
+}
+```
+
+Passwords are hashed before they are stored. The response returns the new user's
+ID, name, and email.
+
+### Log in
+
+```http
+POST /api/auth/login
+Content-Type: application/json
+```
+
+```json
+{
+  "email": "user@example.com",
+  "password": "your-password"
+}
+```
+
+Successful login returns the user details and a JWT that expires after one hour.
+Set `JWT_SECRET` in `.env` before using authentication.
 
 ### Create a monitor
 
@@ -203,7 +239,8 @@ Content-Type: application/json
 
 ## Database models
 
-- `Monitor` stores the monitored URL, name, interval, current status, and creation time.
+- `User` stores account details and owns monitors.
+- `Monitor` stores the monitored URL, name, interval, current status, owner, and creation time.
 - `MonitorCheck` stores every check result, response time, HTTP status code, and timestamp.
 - `Incident` stores an outage start time and remains open until `resolvedAt` is set.
 
@@ -213,8 +250,11 @@ Content-Type: application/json
 src/
   server.js                         Express API entry point
   prisma.js                         Prisma PostgreSQL client
-  controllers/monitor.controllers.js API handlers
+  controllers/auth.controller.js   Registration and login handlers
+  controllers/monitor.controllers.js Monitor API handlers
+  routes/authroutes.js              Authentication routes
   routes/monitor.routes.js          Monitor routes
+  services/auth.service.js          Password hashing and JWT creation
   services/monitor.service.js       Checks and database operations
   services/monitor.schedular.js     Optional in-process learning scheduler
   queues/monitor-queue.js           BullMQ check and failed-job queues
@@ -240,7 +280,7 @@ npx prisma db push        # Apply the Prisma schema to PostgreSQL
 - The Docker setup exposes Redis on host port `6123`; the worker uses that port, while the queue producer currently uses `localhost:6379`. Align those queue connection settings when running the BullMQ API flow with Docker.
 - Scheduler mode only loads monitors at API startup.
 - The immediate `/api/monitors/check` endpoint stores a check but does not update monitor status or create or resolve incidents.
-- Authentication and authorization are not implemented.
+- Monitor routes currently do not enforce JWT authorization, even though registration and login are available.
 - Failed jobs are copied to `monitor-failed`, but no consumer is implemented for that queue yet.
 
 ## Troubleshooting

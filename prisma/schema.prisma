@@ -32,7 +32,7 @@ model Monitor {
 
 model Incident {
   id            Int      @id @default(autoincrement())
-monitorId     Int
+  monitorId     Int
   startedAt     DateTime @default(now())
   resolvedAt    DateTime?
   monitor Monitor @relation(fields:[monitorId],references:[id],onDelete:Cascade)
