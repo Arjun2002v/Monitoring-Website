@@ -1,6 +1,7 @@
 const express = require("express")
 const { createMonitor, checkWebsite, storeResults, getAllMonitors, updateMonitorController, deleteMonitorController, getMonitorChecksController } = require("../controllers/monitor.controllers")
 
+
 const router = express.Router()
 
 router.post("/",createMonitor)
@@ -13,6 +14,7 @@ router.delete("/:id", deleteMonitorController);
 
 router.put("/:id", updateMonitorController);
 router.get("/:id/checks", getMonitorChecksController);
+
     
 
 module.exports = router
