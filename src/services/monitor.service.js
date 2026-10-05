@@ -167,6 +167,7 @@ const getIncidentMonitors = async(id)=>{
     return result
 }
 
+//Pagination and filtering
 const getMonitorChecks = async (id, page, limit, status) => {
 
     const skip = (page - 1) * limit;

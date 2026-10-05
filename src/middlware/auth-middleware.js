@@ -13,7 +13,7 @@ const authMiddleware = (req, res, next) => {
             });
         }
 
-        // Check Bearer format
+        // Check Bearer format  
         if (!authHeader.startsWith("Bearer ")) {
             return res.status(401).json({
                 success: false,
