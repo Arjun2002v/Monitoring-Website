@@ -1,11 +1,11 @@
 
-const { use } = require("react");
+const bcrypt = require("bcryptjs");
 const prisma = require("../prisma")
 const jwt = require("jsonwebtoken");
 
 //Registering the user
 
-const registerUser = async (name,email,password)=>{
+const registerUser = async ({ name, email, password })=>{
 
     const existing = await prisma.user.findUnique({
         where:{

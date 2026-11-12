@@ -1,0 +1,12 @@
+.page { position: relative; min-height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+.grid {
+  position: absolute; inset: 0; z-index: -1;
+  background-image:
+    linear-gradient(var(--border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border) 1px, transparent 1px);
+  background-size: 44px 44px;
+  mask-image: radial-gradient(ellipse 60% 50% at 50% 30%, #000 20%, transparent 75%);
+  opacity: 0.6;
+}
+.header { padding: 22px var(--gutter); }
+.main { flex: 1; display: grid; place-items: center; padding: 24px var(--gutter) 80px; }

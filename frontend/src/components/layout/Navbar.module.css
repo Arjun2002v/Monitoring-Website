@@ -1,0 +1,44 @@
+.nav {
+  position: sticky; top: 0; z-index: 40;
+  background: rgba(251, 250, 248, 0.8);
+  backdrop-filter: saturate(180%) blur(12px);
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.2s;
+}
+.scrolled { border-bottom-color: var(--border); }
+
+.inner { display: flex; align-items: center; justify-content: space-between; height: var(--nav-h); }
+.left { display: flex; align-items: center; gap: 40px; }
+.links { display: flex; gap: 4px; }
+.link {
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  color: var(--text-muted);
+  transition: color 0.15s, background-color 0.15s;
+}
+.link:hover { color: var(--text); background: var(--bg-subtle); }
+
+.right { display: flex; align-items: center; gap: 6px; }
+
+.burger {
+  display: none;
+  place-items: center;
+  width: 36px; height: 36px;
+  border: 0; border-radius: var(--radius-sm);
+  background: transparent; cursor: pointer;
+}
+
+.mobile {
+  display: none;
+  flex-direction: column;
+  padding: 8px var(--gutter) 16px;
+  border-top: 1px solid var(--border);
+}
+.mobile a { padding: 12px 0; font-size: 16px; border-bottom: 1px solid var(--border); }
+
+@media (max-width: 760px) {
+  .links, .login { display: none; }
+  .burger { display: grid; }
+  .mobile { display: flex; }
+}

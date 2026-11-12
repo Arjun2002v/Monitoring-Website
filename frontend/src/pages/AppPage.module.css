@@ -1,0 +1,50 @@
+/* Shared styles for authenticated app pages. */
+.header { display: flex; justify-content: space-between; align-items: flex-end; gap: 20px; flex-wrap: wrap; }
+.title { font-size: clamp(30px, 3.4vw, 40px); letter-spacing: -0.04em; }
+.subtitle { margin-top: 6px; color: var(--text-muted); font-size: 15px; }
+.headerActions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 28px; }
+
+.panel {
+  margin-top: 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  overflow: hidden;
+}
+.panelHead {
+  display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+}
+.panelTitle { font-size: 15px; font-weight: 500; letter-spacing: -0.01em; }
+.panelBody { padding: 20px; }
+.center { display: grid; place-items: center; padding: 64px; color: var(--text-muted); }
+.errorBox { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; padding: 20px; }
+
+.back { display: inline-flex; align-items: center; gap: 6px; margin-bottom: 18px; font-size: 14px; color: var(--text-muted); }
+.back:hover { color: var(--text); }
+.titleRow { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.url { display: inline-flex; align-items: center; gap: 6px; margin-top: 8px; font-family: var(--font-mono); font-size: 13px; color: var(--text-muted); }
+.url:hover { color: var(--accent); }
+
+.segmented { display: inline-flex; padding: 3px; border-radius: var(--radius-sm); background: var(--bg-subtle); border: 1px solid var(--border); }
+.segment {
+  padding: 4px 12px; border: 0; border-radius: 6px;
+  background: transparent; font-size: 13px; color: var(--text-muted); cursor: pointer;
+}
+.segmentActive { background: var(--surface); color: var(--text); box-shadow: var(--shadow-sm); }
+
+.pager {
+  display: flex; justify-content: space-between; align-items: center; gap: 12px;
+  padding: 12px 16px; border-top: 1px solid var(--border);
+  font-size: 13px; color: var(--text-muted);
+}
+.pagerBtns { display: flex; gap: 6px; }
+.uptimeRow { margin-top: 18px; }
+.uptimeLegend { display: flex; justify-content: space-between; margin-top: 6px; font-size: 12px; color: var(--text-faint); }
+
+@media (max-width: 900px) {
+  .stats { grid-template-columns: repeat(2, 1fr); }
+}

@@ -1,0 +1,25 @@
+.field { display: flex; flex-direction: column; gap: 6px; }
+
+.label { font-size: 13px; font-weight: 500; color: var(--text); }
+
+.control {
+  height: 42px;
+  padding: 0 12px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  font-size: 14px;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  width: 100%;
+}
+.control::placeholder { color: var(--text-faint); }
+.control:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 4px var(--accent-ring); }
+select.control { appearance: none; padding-right: 32px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='none' stroke='%236b645b' stroke-width='1.6' viewBox='0 0 12 12'%3E%3Cpath d='M3 4.5 6 7.5l3-3'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 12px center; }
+
+.invalid { border-color: var(--down); }
+.invalid:focus { box-shadow: 0 0 0 4px rgba(217, 48, 37, 0.15); border-color: var(--down); }
+
+.hint { font-size: 12px; color: var(--text-faint); }
+.error { font-size: 12px; color: var(--down); }

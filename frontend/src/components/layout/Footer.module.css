@@ -1,0 +1,5 @@
+.footer { border-top: 1px solid var(--border); padding-block: 48px; }
+.inner { display: flex; justify-content: space-between; align-items: flex-end; gap: 32px; flex-wrap: wrap; }
+.brand { max-width: 380px; }
+.blurb { margin-top: 12px; font-size: 14px; color: var(--text-muted); }
+.copy { font-size: 13px; color: var(--text-faint); }

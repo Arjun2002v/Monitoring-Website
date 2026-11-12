@@ -1,0 +1,16 @@
+.card {
+  width: 100%; max-width: 420px;
+  padding: 36px 32px 32px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: var(--surface);
+  box-shadow: var(--shadow-lg);
+}
+.title { font-size: 34px; letter-spacing: -0.04em; }
+.title :global(.serif-accent) { color: var(--accent); font-size: 1.08em; }
+.lead { margin-top: 8px; color: var(--text-muted); font-size: 15px; }
+.form { display: grid; gap: 16px; margin-top: 28px; }
+.submit { width: 100%; margin-top: 6px; }
+.switch { margin-top: 22px; text-align: center; font-size: 14px; color: var(--text-muted); }
+.switch a { color: var(--accent); font-weight: 500; }
+.switch a:hover { text-decoration: underline; }

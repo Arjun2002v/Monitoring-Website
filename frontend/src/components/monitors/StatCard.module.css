@@ -1,0 +1,15 @@
+.card {
+  padding: 18px 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+.label { font-size: 13px; color: var(--text-muted); }
+.value {
+  margin-top: 6px;
+  font-size: 32px; font-weight: 500; letter-spacing: -0.04em; line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.hint { margin-top: 8px; font-size: 12px; color: var(--text-faint); }
+.up { color: var(--up); }
+.down { color: var(--down); }

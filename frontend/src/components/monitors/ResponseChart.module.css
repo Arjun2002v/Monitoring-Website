@@ -1,0 +1,11 @@
+.wrap { position: relative; }
+.svg { display: block; width: 100%; }
+.grid { stroke: var(--border); stroke-dasharray: 3 4; }
+.line { fill: none; stroke: var(--accent); stroke-width: 1.75; stroke-linejoin: round; }
+.fail { fill: var(--down); stroke: #fff; stroke-width: 1.5; }
+.max { position: absolute; top: 0; right: 0; font-family: var(--font-mono); font-size: 11px; color: var(--text-faint); }
+.empty {
+  display: grid; place-items: center;
+  border: 1px dashed var(--border-strong); border-radius: var(--radius);
+  color: var(--text-faint); font-size: 13px;
+}

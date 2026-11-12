@@ -1,0 +1,6 @@
+.bar { display: flex; gap: 2px; height: 26px; align-items: stretch; }
+.tick { flex: 1; min-width: 2px; border-radius: 2px; transition: transform 0.15s; }
+.tick:hover { transform: scaleY(1.12); }
+.up { background: var(--up); opacity: 0.85; }
+.down { background: var(--down); }
+.empty { background: var(--border); }

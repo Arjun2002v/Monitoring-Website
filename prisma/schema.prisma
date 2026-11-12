@@ -27,7 +27,7 @@ model Monitor {
   checks  MonitorCheck[]
   incidents Incident[]
   userId Int
-  user User @relation(fields:[userId],reference:[id],onDelete:Cascade)
+  user User @relation(fields:[userId],references:[id],onDelete:Cascade)
 }
 
 model Incident {

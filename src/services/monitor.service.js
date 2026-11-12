@@ -1,6 +1,6 @@
 // Shared Prisma client used for all monitor database operations.
 const prisma = require("../prisma");
-const { scheduleMonitor } = require("../queues/monitor-queue");
+const { scheduleMonitor, removeMonitorSchedule } = require("../queues/monitor-queue");
 
 
 
@@ -12,7 +12,8 @@ const createMonitor = async (monitorData) => {
         data: {
             name: monitorData.name,
             url: monitorData.url,
-            interval: monitorData.interval
+            interval: Number(monitorData.interval),
+            userId: Number(monitorData.userId)
         }
     });
 
@@ -128,10 +129,11 @@ const getMonitorsById =async (id) =>{
     return result
 }
 
-// Retrieves all monitors with the newest monitors first.
-const getMonitors =async () =>{
+// Retrieves monitors (optionally only one user's) with the newest monitors first.
+const getMonitors =async (userId) =>{
 
    const result = await prisma.monitor.findMany({
+    where: userId ? { userId: Number(userId) } : {},
     orderBy:{
         createdAt:"desc"
     }

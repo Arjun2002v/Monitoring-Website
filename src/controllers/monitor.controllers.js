@@ -14,8 +14,9 @@ const createMonitor = async (req,res)=>{
 
     }
 
-    const monitor = monitorService.createMonitor({
-        url,name,interval
+    const monitor = await monitorService.createMonitor({
+        url,name,interval,
+        userId:req.user.userId
     })
     return res.status(201).json({
         success:true,
@@ -83,18 +84,18 @@ const createMonitor = async (req,res)=>{
     });
  };
 
- const getAllMonitors = (_,res)=>{
+ const getAllMonitors = async (req,res)=>{
     try{
-         const result = monitorService.getMonitors()
+         const result = await monitorService.getMonitors(req.user.userId)
          res.status(200).json({
-            message:result,
-            success:"true"
+            success:true,
+            data:result
          })
 
     }catch(error){
         res.status(500).json({
-               success:"false",
-            message:error
+            success:false,
+            message:error.message
         })
 
     }
@@ -128,7 +129,7 @@ const getMonitorChecksController = async (req, res) => {
         const pageNumber = Number(page);
         const limitNumber = Number(limit);
 
-        const { result, total } = await getMonitorChecks(
+        const { result, total } = await monitorService.getMonitorChecks(
             id,
             pageNumber,
             limitNumber,

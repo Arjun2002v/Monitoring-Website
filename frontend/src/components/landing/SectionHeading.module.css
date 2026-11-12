@@ -1,0 +1,11 @@
+.heading { display: flex; flex-direction: column; gap: 16px; max-width: 680px; }
+.center { align-items: center; text-align: center; margin-inline: auto; }
+.left { align-items: flex-start; }
+.title {
+  font-size: clamp(34px, 4.6vw, 56px);
+  letter-spacing: -0.032em;
+  line-height: 1.02;
+  text-wrap: balance;
+}
+.title :global(.serif-accent) { font-size: 1.08em; }
+.lead { font-size: 18px; color: var(--text-muted); text-wrap: pretty; }

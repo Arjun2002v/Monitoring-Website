@@ -1,0 +1,15 @@
+.badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 2px 9px 2px 7px;
+  border-radius: var(--radius-pill);
+  font-size: 12px; font-weight: 500;
+  white-space: nowrap;
+}
+.dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+
+.up { background: var(--up-soft); color: var(--up); }
+.up .dot { box-shadow: 0 0 0 3px rgba(31, 157, 85, 0.18); animation: pulse 2s ease-in-out infinite; }
+.down { background: var(--down-soft); color: var(--down); }
+.unknown { background: var(--unknown-soft); color: var(--unknown); }
+
+@keyframes pulse { 50% { box-shadow: 0 0 0 5px rgba(31, 157, 85, 0); } }
